@@ -65,11 +65,9 @@ export class Dagnammit {
   @func()
   image() {
     // We can't copy out of a cache, apparently. So just copy the file to an uncached location.
-    const build = this.build().withExec([
-      "cp",
-      "/src/target/release/dagnammit",
-      "/",
-    ]);
+    const build = this.build()
+      .withExec(["cp", "/src/target/release/dagnammit", "/"])
+      .withExec(["strip", "/dagnammit"]);
 
     const exe = build.file("/dagnammit");
 
@@ -78,6 +76,14 @@ export class Dagnammit {
       .from("gcr.io/distroless/cc-debian13")
       .withUser("nonroot")
       .withExposedPort(3000)
+      .withLabel(
+        "org.opencontainers.image.source",
+        "https://github.com/accidentaldevelopment/dagnammit",
+      )
+      .withLabel(
+        "org.opencontainers.image.description",
+        "A definitely not useless application",
+      )
       .withFile("/dagnammit", exe)
       .withEntrypoint(["/dagnammit"]);
   }
