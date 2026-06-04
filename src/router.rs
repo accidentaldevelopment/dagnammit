@@ -6,6 +6,7 @@ pub fn build() -> Router {
     Router::new()
         .route("/livez", get(livez))
         .route("/hi", get(hi))
+        .route("/bye", get(bye))
         .layer(TraceLayer::new_for_http().make_span_with(DefaultMakeSpan::new().level(Level::INFO)))
 }
 
@@ -15,6 +16,10 @@ async fn livez() -> StatusCode {
 
 async fn hi() -> impl IntoResponse {
     "hello!"
+}
+
+async fn bye() -> impl IntoResponse {
+     "buh bye"
 }
 
 #[cfg(test)]
@@ -63,6 +68,22 @@ mod tests {
                 .await
                 .expect("should be bytes")[..],
             b"hello!"
+        );
+    }
+
+    #[tokio::test]
+    async fn get_bye() {
+        let response = router()
+            .oneshot(Request::get("/bye").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            &axum::body::to_bytes(response.into_body(), 7)
+                .await
+                .expect("should be bytes")[..],
+            b"buh bye"
         );
     }
 }
