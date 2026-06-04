@@ -6,22 +6,57 @@ on:
   pull_request:
 
 jobs:
-  checks:
+  check:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
-        with:
-          version: latest
-          verb: checks
+    services:
+      dagger-engine:
+        image: registry.dagger.io/engine:v0.21.4
+        options: --privileged --name dagger-engine-v0.21.4
+        volumes:
+          - dagger:/var/lib/dagger
 
-  # build:
-  #   runs-on: ubuntu-latest
-  #   needs: checks
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
-  #       with:
-  #         version: latest
-  #         verb: call
-  #         args: build
+    steps:
+      - name: pull code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: install dagger cli
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: v0.21.4
+
+      - name: prepare build environment
+        run: dagger call build-env
+
+      - name: run all checks
+        run: dagger checks
+
+      - name: check again - does it cache
+        run: dagger checks
+
+  build-and-publish:
+    runs-on: ubuntu-latest
+    services:
+      dagger-engine:
+        image: registry.dagger.io/engine:v0.21.4
+        options: --privileged --name dagger-engine-v0.21.4
+        volumes:
+          - dagger:/var/lib/dagger
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: pull code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: install dagger cli
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: v0.21.4
+
+      - name: run build
+        env:
+          DOCKER_REGISTRY: ghcr.io
+          DOCKER_USERNAME: ${{ github.actor }}
+          DOCKER_SECRET: ${{ secrets.GITHUB_TOKEN }}
+        run: dagger call image with-registry-auth --address $DOCKER_REGISTRY --username $DOCKER_USERNAME --secret env://DOCKER_SECRET publish --address ghcr.io/accidentaldevelopment/dagnammit:dev
