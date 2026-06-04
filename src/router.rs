@@ -16,3 +16,53 @@ async fn livez() -> StatusCode {
 async fn hi() -> impl IntoResponse {
     "hello!"
 }
+
+#[cfg(test)]
+mod tests {
+    use axum::{
+        Router,
+        body::Body,
+        http::{Request, StatusCode},
+    };
+    use tower::ServiceExt as _;
+
+    fn router() -> Router {
+        super::build()
+    }
+
+    #[tokio::test]
+    async fn get_livez() {
+        let response = router()
+            .oneshot(Request::get("/livez").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[tokio::test]
+    async fn head_livez() {
+        let response = router()
+            .oneshot(Request::head("/livez").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+    }
+
+    #[tokio::test]
+    async fn get_hi() {
+        let response = router()
+            .oneshot(Request::get("/hi").body(Body::empty()).unwrap())
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::OK);
+        assert_eq!(
+            &axum::body::to_bytes(response.into_body(), 6)
+                .await
+                .expect("should be bytes")[..],
+            b"hello!"
+        );
+    }
+}

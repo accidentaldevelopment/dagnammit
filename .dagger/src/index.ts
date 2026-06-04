@@ -39,7 +39,7 @@ export class Dagnammit {
   @func()
   @check()
   clippy() {
-    return this.buildEnv().withExec(["cargo", "clippy"]);
+    return this.buildEnv().withExec(["cargo", "clippy", "--workspace"]);
   }
 
   /**
@@ -48,7 +48,16 @@ export class Dagnammit {
   @func()
   @check()
   fmt() {
-    return this.buildEnv().withExec(["cargo", "fmt", "--check"]);
+    return this.buildEnv().withExec(["cargo", "fmt", "--check", "--all"]);
+  }
+
+  /**
+   * Run tests
+   */
+  @func()
+  @check()
+  test() {
+    return this.buildEnv().withExec(["cargo", "test", "--workspace"]);
   }
 
   /**
