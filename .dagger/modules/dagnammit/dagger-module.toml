@@ -1,0 +1,5 @@
+name = "dagnammit"
+engineVersion = "v0.21.4"
+
+[runtime]
+  source = "typescript"

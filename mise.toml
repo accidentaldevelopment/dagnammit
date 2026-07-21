@@ -1,2 +1,5 @@
 [tools]
-rust = { version = '1.96.0', components = 'rustfmt,clippy' }
+rust = { version = '1.97.1', components = 'rustfmt,clippy' }
+
+[env]
+DAGGER_X_RELEASE = 'v1.0.0-beta.7'
