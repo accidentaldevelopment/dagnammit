@@ -4,18 +4,17 @@ import {
   Directory,
   object,
   func,
-  argument,
   check,
+  Workspace,
 } from "@dagger.io/dagger";
+import { up } from "../sdk/core";
 
 @object()
 export class Dagnammit {
-  source: Directory;
+  private source: Directory;
 
-  constructor(
-    @argument({ defaultPath: "/", ignore: ["target", ".*"] }) source: Directory,
-  ) {
-    this.source = source;
+  constructor(ws: Workspace) {
+    this.source = ws.directory(".", { gitignore: true });
   }
 
   /**
@@ -24,13 +23,28 @@ export class Dagnammit {
   @func()
   buildEnv(): Container {
     return dag
+      .mise()
       .container()
-      .from("rust:1.96.0")
-      .withExec(["rustup", "component", "add", "rustfmt", "clippy"])
       .withWorkdir("/src")
       .withMountedCache("/src/target", dag.cacheVolume("rust-target"))
       .withMountedCache("/usr/local/cargo/registry", dag.cacheVolume("cargo"))
-      .withDirectory("/src", this.source);
+      .withFile("mise.toml", this.source.file("mise.toml"))
+      .withExec(["mise", "trust"])
+      .withExec(["mise", "install"])
+      .withDirectory(".", this.source)
+      .withExec(["cargo", "fetch", "--locked"]);
+  }
+
+  /**
+   * Start the service. Doesn't actually work right now...
+   */
+  @func()
+  @up()
+  run() {
+    return this.buildEnv()
+      .withExec(["cargo", "run"])
+      .withExposedPort(3000)
+      .asService();
   }
 
   /**
