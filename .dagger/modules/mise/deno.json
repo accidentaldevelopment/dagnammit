@@ -1,0 +1,1 @@
+{"nodeModulesDir":"auto","unstable":["bare-node-builtins","sloppy-imports","node-globals","byonm"],"compilerOptions":{"experimentalDecorators":true},"imports":{"@dagger.io/dagger":"./sdk/index.ts","@dagger.io/dagger/telemetry":"./sdk/telemetry.ts","typescript":"npm:typescript@5.9.3"}}

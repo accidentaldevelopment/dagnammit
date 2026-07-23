@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     services:
       dagger-engine:
-        image: registry.dagger.io/engine:v0.21.4
-        options: --privileged --name dagger-engine-v0.21.4
+        image: registry.dagger.io/engine:v1.0.0-beta.7
+        options: --privileged --name dagger-engine-v1.0.0-beta.7
         volumes:
           - dagger:/var/lib/dagger
 
@@ -22,23 +22,23 @@ jobs:
       - name: install dagger cli
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
-          version: v0.21.4
+          version: v1.0.0-beta.7
 
       - name: prepare build environment
         run: dagger call build-env
 
       - name: run all checks
-        run: dagger checks
+        run: dagger check --no-generate
 
       - name: check again - does it cache
-        run: dagger checks
+        run: dagger check --no-generate
 
   build-and-publish:
     runs-on: ubuntu-latest
     services:
       dagger-engine:
-        image: registry.dagger.io/engine:v0.21.4
-        options: --privileged --name dagger-engine-v0.21.4
+        image: registry.dagger.io/engine:v1.0.0-beta.7
+        options: --privileged --name dagger-engine-v1.0.0-beta.7
         volumes:
           - dagger:/var/lib/dagger
     permissions:
@@ -52,7 +52,7 @@ jobs:
       - name: install dagger cli
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
-          version: v0.21.4
+          version: v1.0.0-beta.7
 
       - name: run build
         env:
