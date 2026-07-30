@@ -4,18 +4,16 @@ import {
   Directory,
   object,
   func,
-  argument,
   check,
+  Workspace,
 } from "@dagger.io/dagger";
 
 @object()
 export class Dagnammit {
   source: Directory;
 
-  constructor(
-    @argument({ defaultPath: "/", ignore: ["target", ".*"] }) source: Directory,
-  ) {
-    this.source = source;
+  constructor(ws: Workspace) {
+    this.source = ws.directory("/", { gitignore: true });
   }
 
   /**
